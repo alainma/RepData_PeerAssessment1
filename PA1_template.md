@@ -5,13 +5,10 @@ date: "Wednesday, September 16, 2015"
 output: html_document
 ---
 
-```{r setup, echo = FALSE, results = 'hide', warning = FALSE}
-library(knitr)
-opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 6, fig.align = 'center')
-Sys.setlocale("LC_TIME", "English")
-```
 
-```{r}
+
+
+```r
 # Load all necessary libraries
 library(reshape2)
 library(ggplot2)
@@ -21,7 +18,8 @@ library(ggplot2)
 
 1. Load the data
 
-```{r}
+
+```r
 df <- read.csv(unzip("repdata-data-activity.zip"))
 ```
 
@@ -33,7 +31,8 @@ Not necessary for my analysis.
 
 1. Calculate the total number of steps taken per day
 
-```{r}
+
+```r
 # Data grouped by date
 grouped_by_date <- melt(df, id.vars = c("date", "interval"))
 grouped_by_date <- dcast(grouped_by_date, date ~ interval)
@@ -44,27 +43,41 @@ grouped_by_date$total_steps <- rowSums(grouped_by_date[-1], na.rm = TRUE)
 
 2. If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 g <- ggplot(data = grouped_by_date, aes(x = total_steps)) + 
      geom_histogram(binwidth = 5000)
 
 print(g)
 ```
 
+<img src="figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
+
 3. Calculate and report the mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 mean(grouped_by_date$total_steps)
 ```
-```{r}
+
+```
+## [1] 9354.23
+```
+
+```r
 median(grouped_by_date$total_steps)
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
 
 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 # Data grouped by interval
 grouped_by_interval <- melt(df, id.vars = c("interval", "date"))
 grouped_by_interval <- dcast(grouped_by_interval, interval ~ date)
@@ -81,30 +94,44 @@ g <- ggplot(grouped_by_interval, aes(x = interval, y = mean)) +
 print(g)
 ```
 
+<img src="figure/unnamed-chunk-7-1.png" title="plot of chunk unnamed-chunk-7" alt="plot of chunk unnamed-chunk-7" style="display: block; margin: auto;" />
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 grouped_by_interval[which.max(grouped_by_interval$mean), ]$interval
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
-```{r}
+
+```r
 sum(is.na(grouped_by_date))
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
-```{r}
+
+```r
 # Calculate the mean for each day
 grouped_by_date$mean <- rowMeans(grouped_by_date[-1], na.rm = TRUE)
 ```
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 # Make a copy of the original dataset
 df_without_na <- df
 
@@ -114,8 +141,8 @@ df_without_na$steps <- ifelse(is.na(df$steps), grouped_by_date[df$date, ]$mean, 
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
 
+```r
 # Data grouped by date
 grouped_by_date <- melt(df_without_na, id.vars = c("date", "interval"))
 grouped_by_date <- dcast(grouped_by_date, date ~ interval)
@@ -128,11 +155,23 @@ g <- ggplot(data = grouped_by_date, aes(x = total_steps)) + geom_histogram(binwi
 
 print(g)
 ```
-```{r}
+
+<img src="figure/unnamed-chunk-12-1.png" title="plot of chunk unnamed-chunk-12" alt="plot of chunk unnamed-chunk-12" style="display: block; margin: auto;" />
+
+```r
 mean(grouped_by_date$total_steps)
 ```
-```{r}
+
+```
+## [1] 9354.23
+```
+
+```r
 median(grouped_by_date$total_steps)
+```
+
+```
+## [1] 10395
 ```
 - As you can see the values don't differ from the first part.
 - As my strategy for filling missing values is use the mean for each day and there are 8 days with all steps equals to NA (mean for that days would be 0 as in the first part) then for me there is no impact on imputing missing data.
@@ -141,7 +180,8 @@ median(grouped_by_date$total_steps)
 
 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 # Transform dates to Date class
 df$date <- as.Date(df$date)
 
@@ -157,7 +197,8 @@ df$day_type <- factor(is_weekday, levels = c(FALSE, TRUE), labels = c('weekend',
 
 2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r}
+
+```r
 # Data grouped by interval and day type
 grouped_by_interval_and_day_type <- melt(df, id.vars = c("interval", "date", "day_type"))
 grouped_by_interval_and_day_type <- dcast(grouped_by_interval_and_day_type, interval + day_type ~ date)
@@ -174,3 +215,5 @@ g <- ggplot(grouped_by_interval_and_day_type, aes(x = interval, y = avg)) +
 
 print(g)
 ```
+
+<img src="figure/unnamed-chunk-16-1.png" title="plot of chunk unnamed-chunk-16" alt="plot of chunk unnamed-chunk-16" style="display: block; margin: auto;" />
